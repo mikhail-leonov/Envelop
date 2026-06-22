@@ -1,0 +1,185 @@
+/* app.css — Envelope Printer
+   "Heritage" theme inspired by the FamilyTree app: warm paper, brick & brass.
+   No new custom component classes are introduced — the file only overrides
+   existing Bootstrap CSS variables and uses element / #id / [attribute] selectors,
+   plus the envelope geometry and print rules that Bootstrap utilities can't express. */
+
+/* ------------------------------------------------------------------ */
+/* Heritage palette — mapped onto Bootstrap's own design tokens.       */
+/* ------------------------------------------------------------------ */
+:root {
+  --bs-body-bg: #f3eee2;
+  --bs-body-color: #3a322b;
+  --bs-secondary-color: #6f6457;
+  --bs-tertiary-bg: #ece4d4;
+  --bs-emphasis-color: #2c241d;
+  --bs-border-color: #d8cbb3;
+  --bs-primary: #6e2b26;
+  --bs-primary-rgb: 110, 43, 38;
+  --bs-link-color: #6e2b26;
+  --bs-link-color-rgb: 110, 43, 38;
+  --bs-link-hover-color: #54201c;
+}
+
+/* Brick-coloured primary buttons (Bootstrap 5.3 button CSS variables). */
+.btn-primary {
+  --bs-btn-bg: #6e2b26;
+  --bs-btn-border-color: #6e2b26;
+  --bs-btn-hover-bg: #54201c;
+  --bs-btn-hover-border-color: #54201c;
+  --bs-btn-active-bg: #4a1c18;
+  --bs-btn-active-border-color: #4a1c18;
+  --bs-btn-disabled-bg: #6e2b26;
+  --bs-btn-disabled-border-color: #6e2b26;
+}
+.btn-outline-primary {
+  --bs-btn-color: #6e2b26;
+  --bs-btn-border-color: #6e2b26;
+  --bs-btn-hover-bg: #6e2b26;
+  --bs-btn-hover-border-color: #6e2b26;
+  --bs-btn-active-bg: #54201c;
+  --bs-btn-active-border-color: #54201c;
+}
+
+/* Brass focus rings. */
+.form-control:focus,
+.form-select:focus,
+.btn:focus-visible {
+  border-color: #927339;
+  box-shadow: 0 0 0 0.2rem rgba(146, 115, 57, 0.35);
+}
+
+/* Fraunces for the wordmark and headings. */
+h1, h2, h3, .modal-title, #brand {
+  font-family: "Fraunces", Georgia, serif;
+  letter-spacing: 0.2px;
+}
+
+/* ------------------------------------------------------------------ */
+/* Envelope geometry — #10 commercial envelope: 9.5in x 4.125in.       */
+/* On screen it fills ~95% of the width; printed it is exact inches.   */
+/* ------------------------------------------------------------------ */
+#envelope {
+  position: relative;
+  width: 95%;
+  max-width: 95%;
+  aspect-ratio: 9.5 / 4.125;
+  overflow: visible;
+  font-size: 1rem;
+  color: #000;
+}
+
+/* Clickable address slots. */
+#envSender,
+#envRecipient {
+  position: absolute;
+  cursor: pointer;
+  border-radius: 0.375rem;
+  transition: outline-color 0.12s ease;
+  word-break: break-word;
+}
+
+/* Sender — top-left, ~0.5in from edges (0.5/4.125 = 12.1%, 0.5/9.5 = 5.26%). */
+#envSender {
+  top: 12.1%;
+  left: 5.26%;
+  max-width: 45%;
+  line-height: 1.35;
+  text-align: left;
+}
+
+/* Recipient — bottom-right. */
+#envRecipient {
+  bottom: 12.1%;
+  right: 5.26%;
+  max-width: 55%;
+  line-height: 1.4;
+  text-align: right;
+}
+
+#envSender:hover,
+#envRecipient:hover,
+#envSender:focus-visible,
+#envRecipient:focus-visible {
+  outline: 2px solid rgba(146, 115, 57, 0.55);
+  outline-offset: 4px;
+}
+
+/* Large "choose address" prompt buttons. */
+[data-placeholder] {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 28rem;
+  min-height: 10rem;
+  font-size: 1.5rem;
+}
+
+/* Stamp guide — top-right corner. */
+#envStamp {
+  position: absolute;
+  top: 9%;
+  right: 5.26%;
+  width: 13%;
+  max-width: 1.1in;
+  aspect-ratio: 1 / 1.15;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px dashed #b9a98a;
+  border-radius: 0.25rem;
+  color: #b9a98a;
+  font-size: 1.8rem;
+  pointer-events: none;
+}
+
+/* ------------------------------------------------------------------ */
+/* Print — output only the envelope, at true physical size.            */
+/* ------------------------------------------------------------------ */
+@media print {
+  body {
+    margin: 0;
+    background: #fff;
+  }
+
+  header,
+  #previewHint,
+  #toastWrap,
+  #addrModal,
+  #envStamp,
+  .modal-backdrop {
+    display: none !important;
+  }
+
+  #envelopePreview {
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  /* Empty-slot prompt buttons never print. */
+  [data-placeholder] {
+    display: none !important;
+  }
+
+  #envSender:hover,
+  #envRecipient:hover {
+    outline: 0 !important;
+  }
+
+  #envelope {
+    width: 9.5in;
+    height: 4.125in;
+    max-width: none;
+    aspect-ratio: auto;
+    overflow: hidden;
+    border: 0 !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    font-size: 12pt;
+  }
+
+  @page {
+    size: 9.5in 4.125in;
+    margin: 0;
+  }
+}
