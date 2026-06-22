@@ -1,7 +1,6 @@
 /* js/lng/en.js — English language pack. Registers itself with the i18n engine. */
 (function () {
   "use strict";
-
   // Bootstrap the shared namespace so this file works regardless of script load order.
   var FT = (window.FT = window.FT || {});
   FT.I18n = FT.I18n || {

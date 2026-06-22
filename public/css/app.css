@@ -180,6 +180,6 @@ h1, h2, h3, .modal-title, #brand {
 
   @page {
     size: 9.5in 4.125in;
-    margin: 0;
+    margin: 0; 
   }
 }

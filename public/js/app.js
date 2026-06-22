@@ -12,7 +12,6 @@
    so everything works even if Bootstrap's JavaScript bundle is not loaded. */
 (function () {
   "use strict";
-
   /* ================================================================ */
   /* i18n engine                                                       */
   /* ================================================================ */
