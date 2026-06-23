@@ -69,40 +69,32 @@ h1, h2, h3, .modal-title, #brand {
   color: #000;
 }
 
-/* ------------------------------------------------------------------ */
-/* Clickable address slots — fixed footprint so a filled address keeps */
-/* the same size as the empty prompt, centred on both axes.            */
-/* ------------------------------------------------------------------ */
+/* Clickable address slots. */
 #envSender,
 #envRecipient {
   position: absolute;
-  display: flex;
-  flex-direction: column;
-  align-items: center;        /* horizontal centring of each line */
-  justify-content: center;    /* vertical centring */
-  text-align: center;
   cursor: pointer;
   border-radius: 0.375rem;
   transition: outline-color 0.12s ease;
   word-break: break-word;
-  font-size: 1.6em;           /* bigger addresses; scales with print 12pt */
-  line-height: 1.4;
 }
 
-/* Sender — top-left region. */
+/* Sender — top-left, ~0.5in from edges (0.5/4.125 = 12.1%, 0.5/9.5 = 5.26%). */
 #envSender {
-  top: 9%;
+  top: 12.1%;
   left: 5.26%;
-  width: 28%;
-  min-height: 28%;
+  max-width: 45%;
+  line-height: 1.35;
+  text-align: left;
 }
 
-/* Recipient — bottom-right region. */
+/* Recipient — bottom-right. */
 #envRecipient {
-  bottom: 9%;
+  bottom: 12.1%;
   right: 5.26%;
-  width: 33.33%;
-  min-height: 28%;
+  max-width: 55%;
+  line-height: 1.4;
+  text-align: right;
 }
 
 #envSender:hover,
@@ -113,49 +105,32 @@ h1, h2, h3, .modal-title, #brand {
   outline-offset: 4px;
 }
 
-/* Large "choose address" prompt buttons — fill the slot, no fixed width. */
+/* Large "choose address" prompt buttons. */
 [data-placeholder] {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 100%;
-  min-height: 7rem;
+  min-width: 28rem;
+  min-height: 10rem;
   font-size: 1.5rem;
 }
 
-/* Stamp guide — drawn US flag stamp, top-right corner. */
+/* Stamp guide — top-right corner. */
 #envStamp {
   position: absolute;
-  top: 8%;
+  top: 9%;
   right: 5.26%;
-  width: 16%;
-  max-width: 1.2in;
-  aspect-ratio: 1 / 1.16;
+  width: 13%;
+  max-width: 1.1in;
+  aspect-ratio: 1 / 1.15;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px dashed #b9a98a;
+  border-radius: 0.25rem;
+  color: #b9a98a;
+  font-size: 1.8rem;
   pointer-events: none;
-}
-#envStamp svg {
-  display: block;
-  width: 100%;
-  height: 100%;
-}
-
-/* Postage/postmark corner marks — frame the stamp zone so there is a clean
-   target for affixing the real stamp / where the postmark lands. Shares the
-   exact footprint of #envStamp so the marks bracket the flag guide on screen,
-   and remain on their own when the flag is hidden for print. */
-#postageMarks {
-  position: absolute;
-  top: 8%;
-  right: 5.26%;
-  width: 16%;
-  max-width: 1.2in;
-  aspect-ratio: 1 / 1.16;
-  pointer-events: none;
-}
-#postageMarks svg {
-  display: block;
-  width: 100%;
-  height: 100%;
 }
 
 /* ------------------------------------------------------------------ */
@@ -171,24 +146,12 @@ h1, h2, h3, .modal-title, #brand {
   #previewHint,
   #toastWrap,
   #addrModal,
-  #presetModal,
-  #calibModal,
   #envStamp,
   .modal-backdrop {
     display: none !important;
   }
 
-  /* The corner marks stay: they are the postmark/stamp placement guide. */
-  #postageMarks {
-    display: block !important;
-  }
-
   #envelopePreview {
-    padding: 0 !important;
-    margin: 0 !important;
-  }
-
-  main {
     padding: 0 !important;
     margin: 0 !important;
   }
@@ -216,8 +179,6 @@ h1, h2, h3, .modal-title, #brand {
   }
 
   @page {
-    /* Default to the No. 10 envelope. app.js overrides this per selected size
-       via the #envSizeStyle block so the page always equals the envelope. */
     size: 9.5in 4.125in;
     margin: 0;
   }
