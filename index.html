@@ -8,6 +8,8 @@
         <link rel="stylesheet" href="public/fonts/common/fraunces.css">
         <link rel="stylesheet" href="public/icons/common/bootstrap-icons.css">
         <link rel="stylesheet" href="public/css/app.css">
+        <style id="envSizeStyle"></style>
+        <style id="envOffsetStyle"></style>
     </head>
     <body class="bg-body">
         <!-- ============================ Header ============================ -->
@@ -20,6 +22,22 @@
                 <label class="visually-hidden" for="langSelect" data-i18n="lang">Language</label>
                 <select id="langSelect" class="form-select form-select-sm w-auto" aria-label="Language"></select>
 
+                <label class="visually-hidden" for="envSizeSelect" data-i18n="env_size">Envelope size</label>
+                <select id="envSizeSelect" class="form-select form-select-sm w-auto" aria-label="Envelope size"></select>
+
+                <div class="form-check form-switch m-0">
+                    <input class="form-check-input" type="checkbox" role="switch" id="hideRecipient">
+                    <label class="form-check-label small" for="hideRecipient" data-i18n="hide_recipient">Hide recipient</label>
+                </div>
+
+                <button type="button" class="btn btn-outline-primary btn-sm" data-action="open-calibrate">
+                    <i class="bi bi-arrows-move me-1"></i><span data-i18n="calibrate">Calibrate</span>
+                </button>
+
+                <button type="button" class="btn btn-outline-primary btn-sm" data-action="open-presets">
+                    <i class="bi bi-collection me-1"></i><span data-i18n="presets">Presets</span>
+                </button>
+
                 <button type="button" class="btn btn-primary btn-sm" data-action="print">
                     <i class="bi bi-printer me-1"></i><span data-i18n="print">Print</span>
                 </button>
@@ -30,7 +48,54 @@
         <main class="container-fluid py-4">
             <div id="envelopePreview" class="d-flex justify-content-center py-2">
                 <div id="envelope" class="bg-white border rounded shadow-sm">
-                    <div id="envStamp" aria-hidden="true"><i class="bi bi-postage-fill"></i></div>
+                    <div id="envStamp" aria-hidden="true">
+                        <svg viewBox="0 0 100 116" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="US flag stamp">
+                            <defs>
+                                <path id="star" d="M0,-2 L0.45,-0.62 1.9,-0.62 0.73,0.24 1.18,1.62 0,0.76 -1.18,1.62 -0.73,0.24 -1.9,-0.62 -0.45,-0.62 Z" fill="#ffffff"/>
+                            </defs>
+                            <!-- stamp paper + perforation hint -->
+                            <rect x="1.5" y="1.5" width="97" height="113" rx="4" fill="#ffffff" stroke="#c8b48a" stroke-width="1.5"/>
+                            <rect x="7" y="7" width="86" height="102" rx="2" fill="none" stroke="#e3d8c0" stroke-width="1" stroke-dasharray="2 2"/>
+                            <!-- flag: native 190x100 scaled 0.4 -> 76x40, placed at (12,14) -->
+                            <g transform="translate(12,14) scale(0.4)">
+                                <rect x="0" y="0" width="190" height="100" fill="#b22234"/>
+                                <g fill="#ffffff">
+                                    <rect x="0" y="7.69" width="190" height="7.69"/>
+                                    <rect x="0" y="23.08" width="190" height="7.69"/>
+                                    <rect x="0" y="38.46" width="190" height="7.69"/>
+                                    <rect x="0" y="53.85" width="190" height="7.69"/>
+                                    <rect x="0" y="69.23" width="190" height="7.69"/>
+                                    <rect x="0" y="84.62" width="190" height="7.69"/>
+                                </g>
+                                <rect x="0" y="0" width="76" height="53.85" fill="#3c3b6e"/>
+                                <g>
+                                    <use href="#star" x="6.33" y="2.99"/><use href="#star" x="19" y="2.99"/><use href="#star" x="31.67" y="2.99"/><use href="#star" x="44.33" y="2.99"/><use href="#star" x="57" y="2.99"/><use href="#star" x="69.67" y="2.99"/>
+                                    <use href="#star" x="12.67" y="8.97"/><use href="#star" x="25.33" y="8.97"/><use href="#star" x="38" y="8.97"/><use href="#star" x="50.67" y="8.97"/><use href="#star" x="63.33" y="8.97"/>
+                                    <use href="#star" x="6.33" y="14.96"/><use href="#star" x="19" y="14.96"/><use href="#star" x="31.67" y="14.96"/><use href="#star" x="44.33" y="14.96"/><use href="#star" x="57" y="14.96"/><use href="#star" x="69.67" y="14.96"/>
+                                    <use href="#star" x="12.67" y="20.94"/><use href="#star" x="25.33" y="20.94"/><use href="#star" x="38" y="20.94"/><use href="#star" x="50.67" y="20.94"/><use href="#star" x="63.33" y="20.94"/>
+                                    <use href="#star" x="6.33" y="26.92"/><use href="#star" x="19" y="26.92"/><use href="#star" x="31.67" y="26.92"/><use href="#star" x="44.33" y="26.92"/><use href="#star" x="57" y="26.92"/><use href="#star" x="69.67" y="26.92"/>
+                                    <use href="#star" x="12.67" y="32.91"/><use href="#star" x="25.33" y="32.91"/><use href="#star" x="38" y="32.91"/><use href="#star" x="50.67" y="32.91"/><use href="#star" x="63.33" y="32.91"/>
+                                    <use href="#star" x="6.33" y="38.89"/><use href="#star" x="19" y="38.89"/><use href="#star" x="31.67" y="38.89"/><use href="#star" x="44.33" y="38.89"/><use href="#star" x="57" y="38.89"/><use href="#star" x="69.67" y="38.89"/>
+                                    <use href="#star" x="12.67" y="44.87"/><use href="#star" x="25.33" y="44.87"/><use href="#star" x="38" y="44.87"/><use href="#star" x="50.67" y="44.87"/><use href="#star" x="63.33" y="44.87"/>
+                                    <use href="#star" x="6.33" y="50.85"/><use href="#star" x="19" y="50.85"/><use href="#star" x="31.67" y="50.85"/><use href="#star" x="44.33" y="50.85"/><use href="#star" x="57" y="50.85"/><use href="#star" x="69.67" y="50.85"/>
+                                </g>
+                            </g>
+                            <text x="50" y="73" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif" font-size="13" font-weight="700" fill="#6e2b26" letter-spacing="1">USA</text>
+                            <text x="50" y="90" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif" font-size="8.5" font-weight="600" fill="#3a322b" letter-spacing="0.5">FOREVER</text>
+                        </svg>
+                    </div>
+                    <!-- Postage/postmark corner marks: bracket the stamp zone on screen
+                         and remain as a placement guide once the flag is hidden for print. -->
+                    <div id="postageMarks" aria-hidden="true">
+                        <svg viewBox="0 0 100 116" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Postage area guide">
+                            <g fill="none" stroke="#b59a6a" stroke-width="2.5" stroke-linecap="square">
+                                <path d="M4 24 V4 H24"/>     <!-- top-left -->
+                                <path d="M76 4 H96 V24"/>    <!-- top-right -->
+                                <path d="M4 92 V112 H24"/>   <!-- bottom-left -->
+                                <path d="M76 112 H96 V92"/>  <!-- bottom-right -->
+                            </g>
+                        </svg>
+                    </div>
                     <div id="envSender" role="button" tabindex="0"
                          data-action="open-slot" data-slot="sender"
                          aria-label="Sender address"></div>
@@ -38,12 +103,6 @@
                          data-action="open-slot" data-slot="recipient"
                          aria-label="Recipient address"></div>
                 </div>
-            </div>
-
-            <div class="d-flex justify-content-center mt-3">
-                <button type="button" class="btn btn-primary btn-lg" data-action="print">
-                    <i class="bi bi-printer me-1"></i><span data-i18n="print_envelope">Print Envelope</span>
-                </button>
             </div>
         </main>
 
@@ -91,6 +150,73 @@
                             <button type="button" class="btn btn-light btn-sm" data-action="close-modal" data-i18n="close">Close</button>
                             <button type="button" id="btnSaveAddr" class="btn btn-primary btn-sm d-none" data-action="save-address">Save &amp; use</button>
                         </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ======================= Presets modal ======================== -->
+        <div class="modal fade" id="presetModal" tabindex="-1" aria-labelledby="presetModalTitle" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h2 class="modal-title h5" id="presetModalTitle" data-i18n="presets">Presets</h2>
+                        <button type="button" class="btn-close" data-action="close-presets" aria-label="Close"></button>
+                    </div>
+
+                    <div class="modal-body">
+                        <div id="presetList" class="list-group mb-3"></div>
+
+                        <hr>
+                        <label class="form-label small mb-1" for="presetName" data-i18n="save_preset">Save current as preset</label>
+                        <div class="input-group input-group-sm">
+                            <input type="text" class="form-control" id="presetName" autocomplete="off"
+                                   data-i18n-ph="preset_name_ph" placeholder="Preset name">
+                            <button type="button" class="btn btn-primary" data-action="save-preset" data-i18n="save">Save</button>
+                        </div>
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-light btn-sm" data-action="close-presets" data-i18n="close">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===================== Calibration modal ====================== -->
+        <div class="modal fade" id="calibModal" tabindex="-1" aria-labelledby="calibModalTitle" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h2 class="modal-title h5" id="calibModalTitle" data-i18n="print_calibration">Print calibration</h2>
+                        <button type="button" class="btn-close" data-action="close-calibrate" aria-label="Close"></button>
+                    </div>
+
+                    <div class="modal-body">
+                        <p class="small text-secondary" data-i18n="calib_hint">Print a test envelope, measure how far the text is off, then nudge until it lines up. Right and down are positive. The preview moves with it, so what you see is what prints.</p>
+
+                        <div class="mb-3">
+                            <label class="form-label small mb-1" for="calibX" data-i18n="offset_x">Horizontal offset (mm)</label>
+                            <div class="input-group input-group-sm">
+                                <button class="btn btn-outline-secondary" type="button" data-action="calib-nudge" data-axis="x" data-delta="-1" aria-label="Left">&minus;</button>
+                                <input type="number" step="0.5" class="form-control text-center" id="calibX" value="0">
+                                <button class="btn btn-outline-secondary" type="button" data-action="calib-nudge" data-axis="x" data-delta="1" aria-label="Right">+</button>
+                            </div>
+                        </div>
+
+                        <div class="mb-1">
+                            <label class="form-label small mb-1" for="calibY" data-i18n="offset_y">Vertical offset (mm)</label>
+                            <div class="input-group input-group-sm">
+                                <button class="btn btn-outline-secondary" type="button" data-action="calib-nudge" data-axis="y" data-delta="-1" aria-label="Up">&minus;</button>
+                                <input type="number" step="0.5" class="form-control text-center" id="calibY" value="0">
+                                <button class="btn btn-outline-secondary" type="button" data-action="calib-nudge" data-axis="y" data-delta="1" aria-label="Down">+</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="modal-footer justify-content-between">
+                        <button type="button" class="btn btn-outline-secondary btn-sm" data-action="calib-reset" data-i18n="reset">Reset</button>
+                        <button type="button" class="btn btn-light btn-sm" data-action="close-calibrate" data-i18n="close">Close</button>
                     </div>
                 </div>
             </div>
