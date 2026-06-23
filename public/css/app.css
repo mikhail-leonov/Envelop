@@ -61,12 +61,27 @@ h1, h2, h3, .modal-title, #brand {
 /* ------------------------------------------------------------------ */
 #envelope {
   position: relative;
-  width: 95%;
-  max-width: 95%;
   aspect-ratio: var(--env-w, 9.5) / var(--env-h, 4.125);
   overflow: visible;
   font-size: 1rem;
   color: #000;
+}
+
+/* On-screen preview: render every size at ONE shared scale, so real size  */
+/* differences are visible. The widest envelope (250×112 → 9.8425 in wide)  */
+/* spans ~90% of the viewport width: 90vw / 9.8425in ≈ 9.144vw per inch.    */
+/* Both dimensions use that factor, so taller sizes get a taller envelope.  */
+/* Printing is unaffected — it uses exact inch dimensions.                  */
+@media screen {
+  #envelope {
+    width:  calc(var(--env-w, 9.5)  * 9.144vw);
+    height: calc(var(--env-h, 4.125) * 9.144vw);
+    flex: none; /* don't let the centring flex row resize it */
+  }
+  #envelopePreview {
+    overflow-x: auto;          /* anything wider than the viewport scrolls */
+    justify-content: safe center;
+  }
 }
 
 /* Clickable address slots. */
