@@ -63,7 +63,7 @@ h1, h2, h3, .modal-title, #brand {
   position: relative;
   width: 95%;
   max-width: 95%;
-  aspect-ratio: 9.5 / 4.125;
+  aspect-ratio: var(--env-w, 9.5) / var(--env-h, 4.125);
   overflow: visible;
   font-size: 1rem;
   color: #000;
@@ -85,7 +85,7 @@ h1, h2, h3, .modal-title, #brand {
   left: 5.26%;
   max-width: 45%;
   line-height: 1.35;
-  text-align: left;
+  text-align: center;
 }
 
 /* Recipient — bottom-right. */
@@ -94,7 +94,7 @@ h1, h2, h3, .modal-title, #brand {
   right: 5.26%;
   max-width: 55%;
   line-height: 1.4;
-  text-align: right;
+  text-align: center;
 }
 
 #envSender:hover,
@@ -103,6 +103,15 @@ h1, h2, h3, .modal-title, #brand {
 #envRecipient:focus-visible {
   outline: 2px solid rgba(146, 115, 57, 0.55);
   outline-offset: 4px;
+}
+
+/* Larger address text in the on-screen preview ONLY.                     */
+/* Scoped to @media screen so the printed envelope keeps its exact size.  */
+@media screen {
+  #envSender,
+  #envRecipient {
+    font-size: 1.4rem;
+  }
 }
 
 /* Large "choose address" prompt buttons. */
@@ -120,18 +129,35 @@ h1, h2, h3, .modal-title, #brand {
   position: absolute;
   top: 9%;
   right: 5.26%;
-  width: 13%;
-  max-width: 1.1in;
+  width: 10%;
+  max-width: 0.9in;
   aspect-ratio: 1 / 1.15;
+  pointer-events: none;
+}
+
+/* Faint postage hint, centred (screen only — hidden when printing). */
+#envStamp > i {
+  position: absolute;
+  inset: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 2px dashed #b9a98a;
-  border-radius: 0.25rem;
   color: #b9a98a;
   font-size: 1.8rem;
-  pointer-events: none;
 }
+
+/* Corner angle marks — L-shaped guides framing the stamp area.          */
+/* Each mark draws two sides of a small square pinned to its corner.      */
+#envStamp [data-corner] {
+  position: absolute;
+  width: 26%;
+  height: 26%;
+  border: 0 solid #b9a98a;
+}
+#envStamp [data-corner="tl"] { top: 0; left: 0; border-top-width: 2px; border-left-width: 2px; }
+#envStamp [data-corner="tr"] { top: 0; right: 0; border-top-width: 2px; border-right-width: 2px; }
+#envStamp [data-corner="bl"] { bottom: 0; left: 0; border-bottom-width: 2px; border-left-width: 2px; }
+#envStamp [data-corner="br"] { bottom: 0; right: 0; border-bottom-width: 2px; border-right-width: 2px; }
 
 /* ------------------------------------------------------------------ */
 /* Print — output only the envelope, at true physical size.            */
@@ -146,9 +172,17 @@ h1, h2, h3, .modal-title, #brand {
   #previewHint,
   #toastWrap,
   #addrModal,
-  #envStamp,
+  #presetModal,
   .modal-backdrop {
     display: none !important;
+  }
+
+  /* Print only the corner angle marks — not the on-screen postage icon. */
+  #envStamp > i {
+    display: none !important;
+  }
+  #envStamp [data-corner] {
+    border-color: #999 !important;
   }
 
   #envelopePreview {

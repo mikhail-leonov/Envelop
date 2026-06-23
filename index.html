@@ -17,6 +17,23 @@
                     <i class="bi bi-envelope-paper me-1"></i><span data-i18n="app_title">Envelope Printer</span>
                 </span>
 
+                <label class="visually-hidden" for="sizeSelect" data-i18n="env_size">Envelope size</label>
+                <select id="sizeSelect" class="form-select form-select-sm w-auto" aria-label="Envelope size">
+                    <option value="no10">#10 — 9.5 × 4.125 in</option>
+                    <option value="no9">#9 — 8.875 × 3.875 in</option>
+                    <option value="monarch">Monarch — 7.5 × 3.875 in</option>
+                    <option value="a2">A2 — 5.75 × 4.375 in</option>
+                    <option value="dl">DL — 220 × 110 mm</option>
+                    <option value="c6">C6 — 162 × 114 mm</option>
+                    <option value="c5">C5 — 229 × 162 mm</option>
+                    <option value="171x100">Small — 171 × 100 mm 3.94 × 6.73 in</option>
+                    <option value="250x112">Long — 250×112 mm 4.41 × 9.84 in</option>
+                </select>
+
+                <button type="button" class="btn btn-outline-primary btn-sm" data-action="open-presets">
+                    <i class="bi bi-collection me-1"></i><span data-i18n="presets">Presets</span>
+                </button>
+
                 <label class="visually-hidden" for="langSelect" data-i18n="lang">Language</label>
                 <select id="langSelect" class="form-select form-select-sm w-auto" aria-label="Language"></select>
 
@@ -30,7 +47,13 @@
         <main class="container-fluid py-4">
             <div id="envelopePreview" class="d-flex justify-content-center py-2">
                 <div id="envelope" class="bg-white border rounded shadow-sm">
-                    <div id="envStamp" aria-hidden="true"><i class="bi bi-postage-fill"></i></div>
+                    <div id="envStamp" aria-hidden="true">
+                        <i class="bi bi-postage-fill"></i>
+                        <span data-corner="tl"></span>
+                        <span data-corner="tr"></span>
+                        <span data-corner="bl"></span>
+                        <span data-corner="br"></span>
+                    </div>
                     <div id="envSender" role="button" tabindex="0"
                          data-action="open-slot" data-slot="sender"
                          aria-label="Sender address"></div>
@@ -85,6 +108,35 @@
                             <button type="button" class="btn btn-light btn-sm" data-action="close-modal" data-i18n="close">Close</button>
                             <button type="button" id="btnSaveAddr" class="btn btn-primary btn-sm d-none" data-action="save-address">Save &amp; use</button>
                         </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ======================== Presets modal ======================= -->
+        <!-- Shown/hidden by app.js (vanilla) using Bootstrap's CSS classes. -->
+        <div class="modal fade" id="presetModal" tabindex="-1" aria-labelledby="presetModalTitle" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h2 class="modal-title h5" id="presetModalTitle" data-i18n="presets">Presets</h2>
+                        <button type="button" class="btn-close" data-action="close-presets" aria-label="Close"></button>
+                    </div>
+
+                    <div class="modal-body">
+                        <div id="presetList" class="list-group mb-3"></div>
+
+                        <hr>
+                        <label class="form-label small mb-1" for="presetName" data-i18n="save_preset">Save current as preset</label>
+                        <div class="input-group input-group-sm">
+                            <input type="text" class="form-control" id="presetName"
+                                   data-i18n-ph="preset_name_ph" placeholder="Preset name" autocomplete="off">
+                            <button type="button" class="btn btn-primary" data-action="save-preset" data-i18n="save">Save</button>
+                        </div>
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-light btn-sm" data-action="close-presets" data-i18n="close">Close</button>
                     </div>
                 </div>
             </div>

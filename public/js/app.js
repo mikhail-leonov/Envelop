@@ -1,5 +1,6 @@
 /* app.js — Envelope Printer
    Vanilla JavaScript, no frameworks, no jQuery, no inline scripts.
+
    The envelope starts empty with two large clickable buttons:
    Sender (top-left) and Recipient (bottom-right). Clicking one opens a
    window listing the saved address book. The first list entry is always
@@ -8,7 +9,13 @@
    automatically instead of opening the window.
    Addresses are { name, address, city, state } and live in localStorage.
 
-   The modal and toast are driven by plain JS using Bootstrap's CSS classes,
+   Envelope size is chosen from a fixed list of standard sizes and drives
+   both the on-screen aspect ratio and the printed @page size.
+
+   Presets store a named snapshot of { senderId, recipientId, size } so a
+   whole envelope setup can be saved and reloaded in one click.
+
+   The modals and toast are driven by plain JS using Bootstrap's CSS classes,
    so everything works even if Bootstrap's JavaScript bundle is not loaded. */
 (function () {
   "use strict";
@@ -41,18 +48,34 @@
   /* ================================================================ */
   var STORAGE = {
     addresses: "envelop.addresses",
-    settings: "envelop.settings"
+    settings: "envelop.settings",
+    presets: "envelop.presets"
   };
 
   var FIELDS = ["name", "address", "city", "state"];
   var SLOT_KEY = { sender: "senderId", recipient: "recipientId" };
 
-  var addresses = [];
-  var settings = { lang: "en", senderId: null, recipientId: null };
+  // Standard envelope sizes. w/h are in inches; mm sizes converted (1mm=0.0393701in).
+  var SIZES = [
+    { code: "no10",    label: "#10 — 9.5 × 4.125 in",    w: 9.5,    h: 4.125 },
+    { code: "no9",     label: "#9 — 8.875 × 3.875 in",   w: 8.875,  h: 3.875 },
+    { code: "monarch", label: "Monarch — 7.5 × 3.875 in", w: 7.5,   h: 3.875 },
+    { code: "a2",      label: "A2 — 5.75 × 4.375 in",    w: 5.75,   h: 4.375 },
+    { code: "dl",      label: "DL — 220 × 110 mm",       w: 8.6614, h: 4.3307 },
+    { code: "c6",      label: "C6 — 162 × 114 mm",       w: 6.3780, h: 4.4882 },
+    { code: "c5",      label: "C5 — 229 × 162 mm",       w: 9.0157, h: 6.3780 },
+    { code: "171x100", label: "171×100 — 100 × 171 mm (~3.94 × 6.73 in)", w: 6.7323, h: 3.9370 },
+    { code: "250x112", label: "250×112 — 112 × 250 mm (~4.41 × 9.84 in)", w: 9.8425, h: 4.4094 }
+  ];
 
-  var activeSlot = "sender"; // which slot the open modal is editing
+  var addresses = [];
+  var presets = [];
+  var settings = { lang: "en", senderId: null, recipientId: null, size: "no10" };
+
+  var activeSlot = "sender"; // which slot the open address modal is editing
   var formEditingId = null;  // address id being edited in the modal form
   var backdropEl = null;     // manual modal backdrop element
+  var openModalEl = null;    // element of the currently open modal (if any)
 
   /* ================================================================ */
   /* Utilities                                                         */
@@ -91,6 +114,25 @@
     return null;
   }
 
+  function findPreset(id) {
+    if (!id) { return null; }
+    for (var i = 0; i < presets.length; i++) {
+      if (presets[i] && presets[i].id === id) { return presets[i]; }
+    }
+    return null;
+  }
+
+  function findSize(code) {
+    for (var i = 0; i < SIZES.length; i++) {
+      if (SIZES[i].code === code) { return SIZES[i]; }
+    }
+    return SIZES[0];
+  }
+  function hasSize(code) {
+    for (var i = 0; i < SIZES.length; i++) { if (SIZES[i].code === code) { return true; } }
+    return false;
+  }
+
   function isEmptyRecord(rec) {
     for (var i = 0; i < FIELDS.length; i++) {
       if (rec[FIELDS[i]]) { return false; }
@@ -125,22 +167,11 @@
   }
 
   /* ---------------------------------------------------------------- */
-  /* Modal (manual — no Bootstrap JS required)                         */
+  /* Modals (manual — no Bootstrap JS required)                        */
+  /* A single shared backdrop; only one modal open at a time.          */
   /* ---------------------------------------------------------------- */
-  function isModalOpen() {
-    var el = $("addrModal");
-    return !!(el && el.classList.contains("show"));
-  }
-
-  function showForm(show) {
-    var f = $("addrForm");
-    var b = $("btnSaveAddr");
-    if (f) { f.classList.toggle("d-none", !show); }
-    if (b) { b.classList.toggle("d-none", !show); }
-  }
-
-  function showModal() {
-    var el = $("addrModal");
+  function showModalEl(id) {
+    var el = $(id);
     if (!el) { return; }
     el.classList.add("show");
     el.style.display = "block";
@@ -148,16 +179,16 @@
     el.setAttribute("aria-modal", "true");
     el.setAttribute("role", "dialog");
     document.body.classList.add("modal-open");
-
     if (!backdropEl) {
       backdropEl = document.createElement("div");
       backdropEl.className = "modal-backdrop fade show";
       document.body.appendChild(backdropEl);
     }
+    openModalEl = el;
   }
 
-  function hideModal() {
-    var el = $("addrModal");
+  function hideModalEl(id) {
+    var el = $(id);
     if (el) {
       el.classList.remove("show");
       el.style.display = "";
@@ -169,8 +200,28 @@
       backdropEl.parentNode.removeChild(backdropEl);
     }
     backdropEl = null;
+    if (openModalEl === el) { openModalEl = null; }
+  }
+
+  function showForm(show) {
+    var f = $("addrForm");
+    var b = $("btnSaveAddr");
+    if (f) { f.classList.toggle("d-none", !show); }
+    if (b) { b.classList.toggle("d-none", !show); }
+  }
+
+  // Address modal wrappers (carry the extra form reset behaviour).
+  function showModal() { showModalEl("addrModal"); }
+  function hideModal() {
+    hideModalEl("addrModal");
     resetForm();
     showForm(false);
+  }
+
+  function closeOpenModal() {
+    if (!openModalEl) { return; }
+    if (openModalEl.id === "addrModal") { hideModal(); }
+    else { hideModalEl(openModalEl.id); }
   }
 
   /* ================================================================ */
@@ -182,10 +233,12 @@
       if (typeof s.lang === "string") { settings.lang = s.lang; }
       settings.senderId = s.senderId || null;
       settings.recipientId = s.recipientId || null;
+      if (typeof s.size === "string") { settings.size = s.size; }
     }
     if (!I18n.has(settings.lang)) {
       settings.lang = I18n.has("en") ? "en" : (I18n.list()[0] || "en");
     }
+    if (!hasSize(settings.size)) { settings.size = SIZES[0].code; }
   }
   function saveSettings() { writeJSON(STORAGE.settings, settings); }
 
@@ -194,6 +247,12 @@
     if (!Array.isArray(addresses)) { addresses = []; }
   }
   function saveAddresses() { writeJSON(STORAGE.addresses, addresses); }
+
+  function loadPresets() {
+    presets = readJSON(STORAGE.presets, []);
+    if (!Array.isArray(presets)) { presets = []; }
+  }
+  function savePresets() { writeJSON(STORAGE.presets, presets); }
 
   /* ================================================================ */
   /* Address formatting                                                */
@@ -217,6 +276,54 @@
       div.textContent = line;
       container.appendChild(div);
     });
+  }
+
+  /* ================================================================ */
+  /* Envelope size                                                     */
+  /* ================================================================ */
+  function applyEnvelopeSize() {
+    var s = findSize(settings.size);
+    var env = $("envelope");
+    if (env) {
+      env.style.setProperty("--env-w", String(s.w));
+      env.style.setProperty("--env-h", String(s.h));
+    }
+    // CSS variables aren't allowed inside @page, so inject a print rule.
+    var st = $("printSizeStyle");
+    if (!st) {
+      st = document.createElement("style");
+      st.id = "printSizeStyle";
+      document.head.appendChild(st);
+    }
+    st.textContent =
+      "@media print{" +
+        "@page{size:" + s.w + "in " + s.h + "in;margin:0;}" +
+        "#envelope{width:" + s.w + "in;height:" + s.h + "in;}" +
+      "}";
+  }
+
+  function buildSizeSelect() {
+    var sel = $("sizeSelect");
+    if (!sel) { return; }
+    // Use the markup's <option> list if it has one; otherwise build from SIZES.
+    if (!sel.options || sel.options.length === 0) {
+      SIZES.forEach(function (s) {
+        var opt = document.createElement("option");
+        opt.value = s.code;
+        opt.textContent = s.label;
+        sel.appendChild(opt);
+      });
+    }
+    sel.value = settings.size;
+  }
+
+  function setSize(code) {
+    if (!hasSize(code)) { code = SIZES[0].code; }
+    settings.size = code;
+    applyEnvelopeSize();
+    saveSettings();
+    var sel = $("sizeSelect");
+    if (sel && sel.value !== code) { sel.value = code; }
   }
 
   /* ================================================================ */
@@ -312,6 +419,114 @@
       item.appendChild(group);
       box.appendChild(item);
     });
+  }
+
+  /* ================================================================ */
+  /* Presets (modal list)                                              */
+  /* ================================================================ */
+  function presetSummary(p) {
+    var size = findSize(p.size).label;
+    var snd = findAddress(p.senderId);
+    var rcp = findAddress(p.recipientId);
+    var sName = snd && snd.name ? snd.name : "—";
+    var rName = rcp && rcp.name ? rcp.name : "—";
+    return size + " · " + sName + " \u2192 " + rName;
+  }
+
+  function renderPresetList() {
+    var box = $("presetList");
+    if (!box) { return; }
+    box.textContent = "";
+
+    if (!presets.length) {
+      var empty = document.createElement("div");
+      empty.className = "list-group-item text-secondary";
+      empty.textContent = I18n.t("no_presets");
+      box.appendChild(empty);
+      return;
+    }
+
+    presets.forEach(function (p) {
+      var item = document.createElement("div");
+      item.className = "list-group-item d-flex justify-content-between align-items-center gap-2";
+
+      var pick = document.createElement("button");
+      pick.type = "button";
+      pick.className = "btn btn-link text-start text-reset text-decoration-none p-0 flex-grow-1";
+      pick.setAttribute("data-action", "load-preset");
+      pick.setAttribute("data-id", p.id);
+
+      var nm = document.createElement("div");
+      nm.className = "fw-semibold";
+      nm.textContent = p.name;
+      pick.appendChild(nm);
+
+      var desc = document.createElement("div");
+      desc.className = "small text-secondary";
+      desc.textContent = presetSummary(p);
+      pick.appendChild(desc);
+
+      var group = document.createElement("div");
+      group.className = "btn-group btn-group-sm flex-shrink-0";
+      group.appendChild(makeBtn("load-preset", p.id, "btn-outline-secondary", I18n.t("load")));
+      group.appendChild(makeBtn("delete-preset", p.id, "btn-outline-danger", I18n.t("delete")));
+
+      item.appendChild(pick);
+      item.appendChild(group);
+      box.appendChild(item);
+    });
+  }
+
+  function openPresets() {
+    var inp = $("presetName");
+    if (inp) { inp.value = ""; }
+    renderPresetList();
+    showModalEl("presetModal");
+  }
+
+  function savePreset() {
+    var inp = $("presetName");
+    var name = inp ? inp.value.trim() : "";
+    if (!name) {
+      flash(I18n.t("preset_name_required"), true);
+      if (inp && inp.focus) { inp.focus(); }
+      return;
+    }
+    presets.push({
+      id: uid(),
+      name: name,
+      senderId: settings.senderId,
+      recipientId: settings.recipientId,
+      size: settings.size
+    });
+    savePresets();
+    if (inp) { inp.value = ""; }
+    renderPresetList();
+    flash(I18n.t("preset_saved"));
+  }
+
+  function loadPreset(id) {
+    var p = findPreset(id);
+    if (!p) { return; }
+    settings.senderId = p.senderId || null;
+    settings.recipientId = p.recipientId || null;
+    if (p.size && hasSize(p.size)) { settings.size = p.size; }
+    saveSettings();
+
+    var sel = $("sizeSelect");
+    if (sel && sel.value !== settings.size) { sel.value = settings.size; }
+    applyEnvelopeSize();
+    updateEnvelope();
+    hideModalEl("presetModal");
+    flash(I18n.t("preset_loaded"));
+  }
+
+  function deletePreset(id) {
+    if (!window.confirm(I18n.t("confirm_delete_preset"))) { return; }
+    presets = presets.filter(function (p) { return p.id !== id; });
+    savePresets();
+    renderPresetList();
+    flash(I18n.t("preset_deleted"));
   }
 
   /* ================================================================ */
@@ -452,7 +667,7 @@
   /* Printing                                                          */
   /* ================================================================ */
   function printEnvelope() {
-    hideModal();
+    closeOpenModal();
     updateEnvelope();
     window.setTimeout(function () { window.print(); }, 120);
   }
@@ -500,6 +715,7 @@
     }
 
     renderAddressList();
+    renderPresetList();
     updateEnvelope();
     saveSettings();
   }
@@ -521,8 +737,8 @@
   /* Events (delegation)                                               */
   /* ================================================================ */
   function onClick(e) {
-    // Click on the modal overlay (outside the dialog) closes it.
-    if (e.target === $("addrModal")) { hideModal(); return; }
+    // Click on a modal overlay (outside the dialog) closes it.
+    if (openModalEl && e.target === openModalEl) { closeOpenModal(); return; }
 
     var node = e.target.closest("[data-action]");
     if (!node) { return; }
@@ -538,6 +754,11 @@
       case "save-address": saveAddressFromForm(); break;
       case "clear-slot": clearSlot(); break;
       case "close-modal": hideModal(); break;
+      case "open-presets": openPresets(); break;
+      case "save-preset": savePreset(); break;
+      case "load-preset": loadPreset(id); break;
+      case "delete-preset": deletePreset(id); break;
+      case "close-presets": hideModalEl("presetModal"); break;
       case "close-toast": hideToast(); break;
       case "print": printEnvelope(); break;
       default: break;
@@ -545,8 +766,13 @@
   }
 
   function onKeydown(e) {
-    if (e.key === "Escape" && isModalOpen()) {
-      hideModal();
+    if (e.key === "Escape" && openModalEl) {
+      closeOpenModal();
+      return;
+    }
+    if (e.key === "Enter" && e.target && e.target.id === "presetName") {
+      e.preventDefault();
+      savePreset();
       return;
     }
     if (e.key === "Enter" || e.key === " " || e.key === "Spacebar") {
@@ -559,6 +785,7 @@
   }
 
   function onLangChange(e) { setLanguage(e.target.value); }
+  function onSizeChange(e) { setSize(e.target.value); }
 
   /* ================================================================ */
   /* Init                                                              */
@@ -566,16 +793,21 @@
   function init() {
     loadSettings();
     loadAddresses();
+    loadPresets();
 
     buildLangSelect();
+    buildSizeSelect();
     setLanguage(settings.lang);
+    applyEnvelopeSize();
     updateEnvelope();
 
     document.addEventListener("click", onClick);
     document.addEventListener("keydown", onKeydown);
 
-    var sel = $("langSelect");
-    if (sel) { sel.addEventListener("change", onLangChange); }
+    var langSel = $("langSelect");
+    if (langSel) { langSel.addEventListener("change", onLangChange); }
+    var sizeSel = $("sizeSelect");
+    if (sizeSel) { sizeSel.addEventListener("change", onSizeChange); }
   }
 
   if (document.readyState === "loading") {

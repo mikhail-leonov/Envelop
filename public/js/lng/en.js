@@ -33,11 +33,25 @@
 
       save_use: "Save & use",
       save_changes: "Save changes",
+      save: "Save",
       edit: "Edit",
       delete: "Delete",
+      load: "Load",
       clear_slot: "Clear this slot",
       close: "Close",
       current: "Current",
+
+      env_size: "Envelope size",
+
+      presets: "Presets",
+      save_preset: "Save current as preset",
+      preset_name_ph: "Preset name",
+      no_presets: "No presets saved yet.",
+      preset_saved: "Preset saved.",
+      preset_loaded: "Preset loaded.",
+      preset_deleted: "Preset deleted.",
+      preset_name_required: "Please enter a preset name.",
+      confirm_delete_preset: "Delete this preset?",
 
       confirm_delete: "Delete this address?",
       saved_ok: "Saved.",
