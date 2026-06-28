@@ -78,6 +78,11 @@ h1, h2, h3, .modal-title, #brand {
     height: calc(var(--env-h, 4.125) * 9.144vw);
     flex: none; /* don't let the centring flex row resize it */
   }
+  /* C5 is physically a tall envelope; trim ONLY its on-screen height so it  */
+  /* isn't oversized in the preview. Every other size is left untouched.     */
+  #envelope[data-size="c5"] {
+    height: 42vw;
+  }
   #envelopePreview {
     overflow-x: auto;          /* anything wider than the viewport scrolls */
     justify-content: safe center;

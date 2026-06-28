@@ -287,6 +287,7 @@
     if (env) {
       env.style.setProperty("--env-w", String(s.w));
       env.style.setProperty("--env-h", String(s.h));
+      env.setAttribute("data-size", s.code);
     }
     // CSS variables aren't allowed inside @page, so inject a print rule.
     var st = $("printSizeStyle");
